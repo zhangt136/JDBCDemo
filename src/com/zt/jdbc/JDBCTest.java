@@ -3,7 +3,8 @@ package com.zt.jdbc;
 
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -12,7 +13,63 @@ import org.junit.Test;
 
 import com.mysql.jdbc.Driver;
 
+
 public class JDBCTest {
+	
+	@Test
+	public void testPreparedStatement(){
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = JDBCTools.getConnection();
+			String sql = "insert into user values(?,?,?,?)";
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setString(1, null);
+			preparedStatement.setString(2, "wangwu");
+			preparedStatement.setString(3, "123321"); 
+			preparedStatement.setString(4, "13673111");
+			preparedStatement.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			JDBCTools.release(null, preparedStatement, connection);
+		}
+		
+	}
+	
+	
+	
+	
+	@Test
+	public void addNewStudent(Student student){
+		String sql = "insert into student values ";
+	}
+	
+	@Test
+	public void testResultSet(){
+		Connection connection = null;
+		Statement statement = null;
+		ResultSet rs = null;
+		try {
+			connection = JDBCTools.getConnection();
+			statement = connection.createStatement();
+			String sql = "select * from user where uid = 1";
+			
+			rs = statement.executeQuery(sql);
+			
+			while(rs.next()){
+				int id = rs.getInt(1);
+				String name = rs.getString(2);
+				String ps = rs.getString(3);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			JDBCTools.release(rs, statement, connection);
+		}
+	}
+	
+	
 	/**
 	 * 版本1
 	 * 通用的更新方法：包括insert , update, delete
@@ -49,7 +106,7 @@ public class JDBCTest {
 	// 一个简单的更新方法（增删改）
 	public void testStatemenet() throws Exception{
 		// 1.链接数据库
-		Connection connection = getConnection2();
+		Connection connection = JDBCTools.getConnection();
 		// 2.准备sql语句
 		String sql = "insert into user values(null,'lisi','123456','1367311')";
 		

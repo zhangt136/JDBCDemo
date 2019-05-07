@@ -3,6 +3,8 @@ package com.zt.jdbc;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
 
@@ -12,13 +14,46 @@ import java.util.Properties;
  *
  */
 public class JDBCTools {
+	/**
+	 * 执行sql语句，使用preparedStatement,提供了占位符
+	 * @param sql
+	 * @param args
+	 */
+	public static void update(String sql, Object... args){
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = JDBCTools.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			
+			for(int i = 0 ; i < args.length; i++){
+				preparedStatement.setObject(i+1, args[i]);
+			}
+			preparedStatement.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			JDBCTools.release(null, preparedStatement, connection);
+		}
+	}
+	
+	
 	
 	/**
 	 * 关闭连接数据
 	 * @param statement
 	 * @param connection
 	 */
-	public static void release(Statement statement , Connection connection){
+	public static void release(ResultSet rs, Statement statement , Connection connection){
+
+		if(rs!=null){
+			try {
+				rs.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		if(statement!=null){
 			try {
 				statement.close();

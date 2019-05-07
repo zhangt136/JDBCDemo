@@ -3,6 +3,7 @@ package com.zt.jdbc;
 
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class JDBCTest {
 		jdbcUrl = properties.getProperty("jdbcUrl");
 		user = properties.getProperty("user");
 		password = properties.getProperty("password");
-		// 通过反射创建驱动对象
+		// 通过反射创建驱动对象（依然使用了Driver，还是无法解耦）
 		Driver driver = (Driver)Class.forName(driverClassName).newInstance();
 		properties.put("user", user);
 		properties.put("password", password);
@@ -55,13 +56,27 @@ public class JDBCTest {
 		return connection;
 	}
 	
-	@Test
-	public void testgetConnection() {
-		try {
-			System.out.println(getConnection());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	/**
+	 * 通过DriverManager和配置文件，实现配置文件与程序的解耦。
+	 * @return
+	 * @throws Exception
+	 */
+	public  Connection getConnection2() throws Exception {
+		//读取类路径下的jdbc.properties文件（仍旧有问题每次连接都会读取一次文件）
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jdbc.properties");
+		Properties properties = new Properties();
+		properties.load(inputStream);
+		// 读取文件内容
+		String driverClassName = properties.getProperty("driver");
+		String jdbcUrl = properties.getProperty("jdbcUrl");
+		String user = properties.getProperty("user");
+		String password = properties.getProperty("password");
+		properties.put("user", user);
+		properties.put("password", password);
+		// 在Driver中静态代码块中DriverManager.registerDriver(new Driver());
+		Class.forName(driverClassName); 
+		Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
+		return connection;
 	}
 	
 }

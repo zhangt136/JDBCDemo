@@ -21,6 +21,35 @@ import com.mysql.jdbc.Driver;
 public class JDBCTest {
 	
 	@Test
+	// 想要获取新插入的数据的主键值
+	public void testgetId(){
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = JDBCTools.getConnection();
+			String sql = "insert into user values(?,?,?,?)";
+			// 使用重载方法
+			preparedStatement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setString(1, null);
+			preparedStatement.setString(2, "wangwu");
+			preparedStatement.setString(3, "123321"); 
+			preparedStatement.setString(4, "13673111");
+			preparedStatement.executeUpdate();
+			// 返回主键的结果集
+			ResultSet rs = preparedStatement.getResultSet();
+			if(rs.next()){
+				// 返回主键值
+				System.out.println(rs.getObject(1));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			JDBCTools.release(null, preparedStatement, connection);
+		}
+		
+	}
+	
+	@Test
 	public void testGet(){
 		// 需要使用sql的别名与类的属性名对应
 		String sql = "select flowid flowId , type , idcard idCard from student where id = ?";

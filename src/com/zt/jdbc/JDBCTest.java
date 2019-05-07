@@ -1,6 +1,7 @@
 package com.zt.jdbc;
 
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.util.Properties;
 
@@ -26,5 +27,41 @@ public class JDBCTest {
 	}
 	
 	
+	/**
+	 * 通过配置文件，实现配置文件与程序的解耦
+	 * @return 返回链接
+	 * @throws Exception
+	 */
+	public Connection getConnection() throws Exception{
+		String driverClassName = null;
+		String jdbcUrl = null;
+		String user = null;
+		String password = null;
+		
+		//读取类路径下的jdbc.properties文件
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jdbc.properties");
+		Properties properties = new Properties();
+		properties.load(inputStream);
+		// 读取文件内容
+		driverClassName = properties.getProperty("driver");
+		jdbcUrl = properties.getProperty("jdbcUrl");
+		user = properties.getProperty("user");
+		password = properties.getProperty("password");
+		// 通过反射创建驱动对象
+		Driver driver = (Driver)Class.forName(driverClassName).newInstance();
+		properties.put("user", user);
+		properties.put("password", password);
+		Connection connection = driver.connect(jdbcUrl, properties);
+		return connection;
+	}
+	
+	@Test
+	public void testgetConnection() {
+		try {
+			System.out.println(getConnection());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

@@ -4,6 +4,8 @@ package com.zt.jdbc;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -11,6 +13,58 @@ import org.junit.Test;
 import com.mysql.jdbc.Driver;
 
 public class JDBCTest {
+	/**
+	 * 版本1
+	 * 通用的更新方法：包括insert , update, delete
+	 * @param sql
+	 */
+	public void update(String sql){
+		Connection connection = null;
+		Statement statement = null;
+		
+		try {
+			connection = JDBCTools.getConnection();
+			statement = connection.createStatement();
+			statement.executeUpdate(sql);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}finally{
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	@Test
+	// 一个简单的更新方法（增删改）
+	public void testStatemenet() throws Exception{
+		// 1.链接数据库
+		Connection connection = getConnection2();
+		// 2.准备sql语句
+		String sql = "insert into user values(null,'lisi','123456','1367311')";
+		
+		// 3.执行插入
+		// 1） 获取statement对象执行sql
+		Statement statement = connection.createStatement();
+		// 2） 调用statement对象的executeUpdate(sql)执行sql语句
+		statement.executeUpdate(sql);
+		// 4.关闭链接
+		statement.close();
+		connection.close();
+	}
+	
+	
+	
 	
 	@Test
 	// 最为原始的链接数据库方法（此方法不通用）
@@ -56,27 +110,6 @@ public class JDBCTest {
 		return connection;
 	}
 	
-	/**
-	 * 通过DriverManager和配置文件，实现配置文件与程序的解耦。
-	 * @return
-	 * @throws Exception
-	 */
-	public  Connection getConnection2() throws Exception {
-		//读取类路径下的jdbc.properties文件（仍旧有问题每次连接都会读取一次文件）
-		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("jdbc.properties");
-		Properties properties = new Properties();
-		properties.load(inputStream);
-		// 读取文件内容
-		String driverClassName = properties.getProperty("driver");
-		String jdbcUrl = properties.getProperty("jdbcUrl");
-		String user = properties.getProperty("user");
-		String password = properties.getProperty("password");
-		properties.put("user", user);
-		properties.put("password", password);
-		// 在Driver中静态代码块中DriverManager.registerDriver(new Driver());
-		Class.forName(driverClassName); 
-		Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
-		return connection;
-	}
+	
 	
 }

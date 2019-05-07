@@ -57,4 +57,21 @@ public class Student {
 				+ studentName + ", location=" + location + ", grade=" + grade
 				+ "]";
 	}
+	public Student(int flowId, int type, String idCard, String examCard,
+			String studentName, String location, int grade) {
+		super();
+		this.flowId = flowId;
+		this.type = type;
+		this.idCard = idCard;
+		this.examCard = examCard;
+		this.studentName = studentName;
+		this.location = location;
+		this.grade = grade;
+	}
+	public Student() {
+		super();
+	}
+	
+	
+	
 }

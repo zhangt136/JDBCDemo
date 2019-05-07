@@ -14,6 +14,9 @@ import java.util.Properties;
  *
  */
 public class JDBCTools {
+	
+	
+	
 	/**
 	 * 执行sql语句，使用preparedStatement,提供了占位符
 	 * @param sql

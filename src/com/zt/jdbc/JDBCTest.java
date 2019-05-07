@@ -2,11 +2,15 @@ package com.zt.jdbc;
 
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -15,6 +19,65 @@ import com.mysql.jdbc.Driver;
 
 
 public class JDBCTest {
+	
+	@Test
+	public void testGet(){
+		// 需要使用sql的别名与类的属性名对应
+		String sql = "select flowid flowId , type , idcard idCard from student where id = ?";
+		Student student = get(Student.class, sql, 1);
+		System.out.println(student);
+	}
+	
+	
+	public <T> T get(Class<T> clazz,String sql, Object... args){
+		T entity = null;
+		Connection connection =null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = JDBCTools.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			// 为每一个占位符赋值
+			for(int i = 0 ; i< args.length; i++){
+				preparedStatement.setObject(i+1, args[i]);
+			}
+			resultSet = preparedStatement.executeQuery();
+			// 获取ResultSetMetaData对象
+			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+			Map<String, Object> valusMap = new HashMap<>();
+			while(resultSet.next()){
+				// 打印每一列的列明和列值
+				for(int i = 0 ; i < resultSetMetaData.getColumnCount(); i++){
+					String columName = resultSetMetaData.getColumnLabel(i+1);
+					Object columValue = resultSet.getObject(columName);
+					valusMap.put(columName, columValue);
+				}
+			}
+			
+			// 给返回对象赋值
+			for(Map.Entry<String, Object> entry : valusMap.entrySet()){
+				String fieldName = entry.getKey();
+				Object fieldValue = entry.getValue();
+				ReflectionUtils.setFieldValue(entity, fieldName,fieldValue );
+				Field field = clazz.getField(fieldName);
+				field.set(entity, fieldValue);
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			JDBCTools.release(resultSet, preparedStatement, connection);
+		}
+		return entity;
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	@Test
 	public void testPreparedStatement(){
